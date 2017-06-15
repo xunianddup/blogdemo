@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.note.dao.PostDao">
+	<resultMap type="cn.tedu.post.entity.Post" 
+		id="postResultMap">
+		<id column="post_id" property="id"/>
+		<result column="post_content"
+			property="content"/>
+		<result column="post_last_time"
+			property="postTime"/>
+		<association property="user"
+			column="user_id"
+			javaType="cn.tedu.post.entity.User">
+			<id column="user_id" property="id"/>
+			<result column="user_name"
+				property="name"/>
+			<result column="user_password"
+				property="password"/>
+			<result column="user_last_time"
+				property="lastTime"/>
+		</association>
+		<collection property="comments"
+			javaType="java.util.ArrayList"
+			ofType="cn.tedu.post.entity.Comment"
+			select="selectComment"
+			column="post_id">
+		</collection>
+	</resultMap>
+	
+ 
+	
+	<select id="selectComment"
+		resultType="cn.tedu.post.entity.Comment">
+		select 
+			comment_id as id,
+			comment_content as content,
+			comment_last_time as commentTime
+		from
+			post_comment
+		where 
+			post_id=#{post_id}
+	</select>
+	
+	<select id="findPostById"
+		parameterType="int"
+		resultMap="postResultMap">
+		select 
+			post_id ,
+			post_content ,
+			post_last_time,
+			user_id
+		from 
+			post_post
+		where 
+			post_id = #{id}	
+	</select>
+</mapper>
+
+
+
+
+
+
+

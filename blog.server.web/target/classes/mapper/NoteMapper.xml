@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.note.dao.NoteDao">
+	<select id="findNotesByNotebookId"
+		parameterType="string"
+		resultType="map">
+ 		select
+			cn_note_id as "id",
+			cn_notebook_id as notebookId,
+			cn_note_title as title 		
+ 		from 
+ 			cn_note
+ 		where
+ 			cn_notebook_id = #{notebookId}
+	</select>
+	
+	<select id="findNoteById"
+		parameterType="string"
+		resultType="cn.tedu.note.entity.Note">
+		select 
+			cn_note_id as id,
+			cn_notebook_id as notebookId,
+			cn_user_id as userId,
+			cn_note_status_id as statusId,
+			cn_note_type_id as typeId,
+			cn_note_title as title,
+			cn_note_body as body,
+			cn_note_create_time as createTime,
+			cn_note_last_modify_time as lastModifyTime
+		from
+			cn_note
+		where
+			cn_note_id=#{noteId}
+	</select>
+	
+	<insert id="saveNote"
+		parameterType="cn.tedu.note.entity.Note">
+		insert into cn_note
+			(cn_note_id,
+			cn_notebook_id,
+			cn_user_id,
+			cn_note_status_id,
+			cn_note_type_id,
+			cn_note_title,
+			cn_note_body,
+			cn_note_create_time,
+			cn_note_last_modify_time)
+		values
+			(#{id},#{notebookId}, #{userId},
+			#{statusId}, #{typeId}, #{title},
+			#{body}, #{createTime}, 
+			#{lastModifyTime})
+	</insert>
+	<!-- map: {id:xxx, title:xxx,
+	 body:xxx, lastModifyTime:xxx} 
+	 map 中的 key-value 相当于Bean属性
+	 -->
+	<update id="updateNote"
+		parameterType="map">
+		update 
+			cn_note
+		<set>
+			<if test="notebookId != null">
+				cn_notebook_id=#{notebookId},
+			</if>
+			<if test="userId != null">
+				cn_user_id=#{userId},
+			</if>
+			<if test="statusId != null">
+				cn_note_status_id=#{statusId},
+			</if>
+			<if test="typeId != null">
+				cn_note_type_id=#{typeId},
+			</if>
+			<if test="title != null">
+				cn_note_title=#{title},
+			</if>
+			<if test="body != null">
+				cn_note_body = #{body},
+			</if>
+			cn_note_last_modify_time=#{lastModifyTime}
+		</set>
+		where
+			cn_note_id=#{id}
+	</update>
+	
+	<delete id="deleteNote"
+		parameterType="string">
+		delete from cn_note
+		where cn_note_id=#{id}
+	</delete>
+	
+	<delete id="deleteNotes">
+		delete from cn_note
+		where cn_note_id in
+		<foreach collection="array"
+			item="id"
+			open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+	
+	<select id="countNotes"
+		resultType="int">
+		select
+			count(*)
+		from
+			cn_note
+		where
+			cn_note_id in 
+		<foreach collection="list"
+			item="id"
+			open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</select>
+	
+	<select id="countNotesByParams"
+		parameterType="map"
+		resultType="int">
+		select 
+			count(*)
+		from 
+			cn_note
+		<where>
+			<trim prefixOverrides="and">
+			<if test="userId != null">
+				cn_user_id = #{userId}  
+			</if>		
+			<if test="statusId != null">
+				and cn_note_status_id = #{statusId}
+			</if>
+			</trim>
+		</where> 
+	</select>
+	
+	<select id="findNoteByParams"
+		parameterType="map"
+		resultType="map">
+		select 
+			cn_note_id as id,
+			cn_note_title as title	
+		from 
+			${tableName}
+		where
+			<trim suffixOverrides="and">
+			<if test="notebookId != null">
+				cn_notebook_id=#{notebookId} and
+			</if>
+			<if test="statusId!=null">
+				cn_note_status_id=#{statusId} and
+			</if>
+			<!-- 假设 notebookList 是存储在
+			map 参数中的 List集合-->
+			<if test="notebookList!=null">
+				cn_notebook_id in 
+				<foreach collection="notebookList"
+					item="id"
+					open="(" separator="," close=")">
+					#{id}
+				</foreach>
+				and
+			</if>
+			<choose>
+				<when test="beginTime!=null and endTime!=null"> 
+					cn_note_last_modify_time 
+					between #{beginTime} 
+					    and #{endTime} 
+				</when>
+				<when test="beginTime!=null">
+					cn_note_last_modify_time >
+					#{beginTime} 
+				</when>
+			</choose>
+		</trim>
+	</select>
+	
+	
+	<select id="findNoteByPage"
+		parameterType="map"
+		resultType="map">
+		select
+			cn_note_id as id,
+			cn_note_title as title
+		from
+			cn_note
+		<where>
+			<if test="notebookId != null">
+				cn_notebook_id=#{notebookId}
+			</if>
+		</where>	
+		limit	#{start}, #{size}
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
